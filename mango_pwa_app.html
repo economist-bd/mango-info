@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>বাংলাদেশের আম - PWA</title>
+    <!-- Manifest link will be injected via JS -->
+    <link id="manifest-link" rel="manifest" href="">
+    <meta name="theme-color" content="#FF9800">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        /* CSS Reset & Basic Setup */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #fdf5e6; /* Light warm background fallback */
+            width: 100vw;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* Main Image Container */
+        .image-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width for tablets, optimal for mobile */
+            margin: 0 auto;
+            display: block;
+        }
+
+        .main-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none; /* User interacts with dots, not the image */
+        }
+
+        /* Blinking Dots */
+        .blink-dot {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ff5722 30%, #e64a19 80%);
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 10px rgba(255, 87, 34, 0.8);
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            cursor: pointer;
+            animation: pulse-animation 1.5s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.7);
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 87, 34, 0);
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 87, 34, 0);
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+        }
+
+        /* Mango Colored Glassmorphism Modal */
+        .glass-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .glass-modal {
+            /* Mango Glass Effect */
+            background: rgba(255, 179, 71, 0.45); /* Mango orange/yellow tint */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(230, 81, 0, 0.3);
+            border-radius: 20px;
+            
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 25px;
+            transform: translateY(30px);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .glass-modal.active {
+            transform: translateY(0);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.5);
+            border: none;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            color: #d84315;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close-btn:active {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .modal-title {
+            color: #bf360c;
+            font-size: 22px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            padding-bottom: 8px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            color: #3e2723;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .modal-body ul {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        .modal-body li {
+            margin-bottom: 8px;
+        }
+
+        .modal-body p {
+            margin-bottom: 10px;
+        }
+
+        .modal-body strong {
+            color: #d84315;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Interface: Image and Dots -->
+    <div class="image-container" id="image-map">
+        <!-- স্যারের গিটহাবের ছবির লিংকটি 'src' তে বসাতে হবে। আপাতত ফাইলের নাম দেওয়া হলো -->
+        <img src="1000162202.png" alt="বাংলাদেশের আম" class="main-image">
+        
+        <!-- Dots will be generated here by JavaScript -->
+    </div>
+
+    <!-- Glassmorphism Modal -->
+    <div class="glass-modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="glass-modal" id="modalContent">
+            <button class="close-btn" onclick="closeModal(event, true)">✕</button>
+            <h2 class="modal-title" id="mTitle">টাইটেল</h2>
+            <div class="modal-body" id="mBody">
+                বিস্তারিত এখানে থাকবে...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for points on the image (Top and Left in percentages)
+        const pointData = [
+            {
+                id: "varieties",
+                top: "22%",  // Top-Right area
+                left: "85%",
+                title: "বাংলাদেশে আমের বৈচিত্র্য",
+                content: `
+                    <ul>
+                        <li><strong>হিমসাগর:</strong> নরম, রসালো, সুগন্ধি এবং আঁশবিহীন— সবার প্রিয়।</li>
+                        <li><strong>ল্যাংড়া:</strong> অল্প আঁশযুক্ত হলেও স্বাদে অনন্য, গাছে হলুদ রং।</li>
+                        <li><strong>ফজলি:</strong> আকারে বড়, মিষ্টতায় ভরপুর, গ্রীষ্মের রাজা।</li>
+                        <li><strong>আম্রপালি:</strong> উজ্জ্বল কমলা রং, মিষ্টি ও সুগন্ধি, সংরক্ষণযোগ্য।</li>
+                        <li><strong>বারি-৪:</strong> উন্নত জাত, উচ্চ ফলনশীল, স্বাদে ও গুণে অতুলনীয়।</li>
+                    </ul>`
+            },
+            {
+                id: "taste",
+                top: "58%",  // Middle-Left area
+                left: "15%",
+                title: "কেন আম এত সুস্বাদু?",
+                content: `
+                    <p><strong>প্রাকৃতিক শর্করা:</strong> গ্লুকোজ, ফ্রুকটোজ ও সুক্রোজের সূক্ষ্ম মিশ্রণ আমকে দেয় মিষ্টতা।</p>
+                    <p><strong>ভোলাটাইল অ্যারোমেটিক যৌগ:</strong> মাইরসিন, লিনালুল, ও সিনিয়াল ইত্যাদি যৌগ আমকে দেয় অনন্য গন্ধ।</p>
+                    <p><strong>জৈব এসিড:</strong> সাইট্রিক ও ম্যালিক এসিডের পরিমাণ কম থাকায় আমে টকভাব কম, ফলে স্বাদ হয় মিষ্টি ও মোলায়েম।</p>`
+            },
+            {
+                id: "nutrition",
+                top: "65%",  // Middle-Center area
+                left: "45%",
+                title: "পুষ্টিগুণে ভরপুর আম",
+                content: `
+                    <p>এক কাপ (প্রায় ১৬৫ গ্রাম) আমে আছে—</p>
+                    <ul>
+                        <li><strong>ক্যালরি:</strong> প্রায় ৯৯ ক্যালরি</li>
+                        <li><strong>ভিটামিন সি:</strong> দৈনিক চাহিদার ৬৭%</li>
+                        <li><strong>ভিটামিন এ:</strong> দৈনিক চাহিদার ২৫%</li>
+                        <li><strong>ফাইবার:</strong> প্রায় ২.৬ গ্রাম</li>
+                        <li><strong>পটাশিয়াম:</strong> দৈনিক চাহিদার ৭%</li>
+                        <li><strong>অ্যান্টিঅক্সিডেন্ট:</strong> শরীরকে রাখে সুস্থ ও রোগমুক্ত।</li>
+                    </ul>`
+            },
+            {
+                id: "health",
+                top: "62%",  // Middle-Right area
+                left: "80%",
+                title: "স্বাস্থ্যের জন্য আমের উপকারিতা",
+                content: `
+                    <ul>
+                        <li>রোগ প্রতিরোধ ক্ষমতা বাড়ায়</li>
+                        <li>হজমে সহায়তা করে</li>
+                        <li>ত্বক ও চোখের জন্য উপকারী</li>
+                        <li>হৃদরোগের ঝুঁকি কমায়</li>
+                        <li>ওজন নিয়ন্ত্রণে সাহায্য করে</li>
+                    </ul>`
+            },
+            {
+                id: "culture",
+                top: "92%",  // Bottom-Left area
+                left: "15%",
+                title: "আম আমাদের সংস্কৃতির অংশ",
+                content: `
+                    <p>বাংলাদেশে আম শুধু একটি ফল নয়, এটি উৎসব, আতিথেয়তা ও আবেগের প্রতীক। গ্রীষ্ম মানেই আম, আর আম মানেই বাংলার সুখস্মৃতি।</p>`
+            },
+            {
+                id: "tips",
+                top: "90%",  // Bottom-Center area
+                left: "50%",
+                title: "আম উপভোগের টিপস",
+                content: `
+                    <ul>
+                        <li>পাকা আম ফ্রিজে না রেখে স্বাভাবিক তাপমাত্রায় রাখুন।</li>
+                        <li>কাটার পর ২-৩ ঘণ্টার মধ্যে খেয়ে ফেলুন।</li>
+                        <li>অতিরিক্ত মিষ্টি বা প্রসেসড আমজাত খাবার এড়িয়ে চলুন।</li>
+                    </ul>`
+            },
+            {
+                id: "preserve",
+                top: "90%",  // Bottom-Right area
+                left: "85%",
+                title: "সংরক্ষণ ও অপচয় রোধ",
+                content: `
+                    <ul>
+                        <li>আমের পাল্প ফ্রিজ করে রাখতে পারেন।</li>
+                        <li>আমের আচার, চাটনি, জ্যাম বানিয়ে সংরক্ষণ করুন।</li>
+                        <li>অতিরিক্ত পাকা আম স্মুদি, মিল্কশেক বা ডেজার্টে ব্যবহার করুন।</li>
+                    </ul>`
+            }
+        ];
+
+        const container = document.getElementById('image-map');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalContent = document.getElementById('modalContent');
+        const mTitle = document.getElementById('mTitle');
+        const mBody = document.getElementById('mBody');
+
+        // Generate dots dynamically
+        pointData.forEach(point => {
+            const dot = document.createElement('div');
+            dot.className = 'blink-dot';
+            dot.style.top = point.top;
+            dot.style.left = point.left;
+            
+            // Add click event
+            dot.addEventListener('click', () => openModal(point));
+            
+            container.appendChild(dot);
+        });
+
+        // Open Modal Function
+        function openModal(data) {
+            mTitle.innerText = data.title;
+            mBody.innerHTML = data.content;
+            
+            modalOverlay.style.display = 'flex';
+            // Slight delay to trigger CSS transition
+            setTimeout(() => {
+                modalOverlay.style.opacity = '1';
+                modalContent.classList.add('active');
+            }, 10);
+            
+            // Prevent scrolling background
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close Modal Function
+        function closeModal(event, forceClose = false) {
+            // Close if clicked on overlay background or close button
+            if (forceClose || event.target === modalOverlay) {
+                modalOverlay.style.opacity = '0';
+                modalContent.classList.remove('active');
+                
+                setTimeout(() => {
+                    modalOverlay.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }, 300);
+            }
+        }
+
+        // ==========================================
+        // SINGLE FILE PWA MAGIC (Blob URLs)
+        // ==========================================
+        
+        // 1. Generate a simple SVG Icon for the App
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FF9800"/><path d="M50 15c-15 0-30 15-20 45 5 15 25 25 40 10 15-15 10-40-5-50-5-3-10-5-15-5z" fill="#FFC107"/><path d="M50 15c-5-10 5-15 15-10" stroke="#4CAF50" stroke-width="4" fill="none"/></svg>`;
+        const iconBlobUrl = 'data:image/svg+xml;base64,' + btoa(svgIcon);
+
+        // 2. Generate manifest.json dynamically
+        const manifest = {
+            "name": "ম্যাংগো ইনফো",
+            "short_name": "আম তথ্য",
+            "description": "বাংলাদেশের আমের বিস্তারিত তথ্য",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#fdf5e6",
+            "theme_color": "#FF9800",
+            "icons": [
+                {
+                    "src": iconBlobUrl,
+                    "sizes": "192x192 512x512",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                }
+            ]
+        };
+        
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifest-link').setAttribute('href', manifestUrl);
+
+        // 3. Generate Service Worker dynamically
+        const swCode = `
+            const CACHE_NAME = 'mango-app-v1';
+            self.addEventListener('install', event => {
+                self.skipWaiting();
+            });
+            self.addEventListener('activate', event => {
+                event.waitUntil(clients.claim());
+            });
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    fetch(event.request).catch(() => {
+                        return new Response('আপনি অফলাইনে আছেন। অ্যাপটি পুনরায় লোড করতে ইন্টারনেট সংযোগ চালু করুন।', {
+                            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+                        });
+                    })
+                );
+            });
+        `;
+        
+        const swBlob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(swBlob);
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register(swUrl)
+                    .then(reg => console.log('PWA Service Worker Registered!'))
+                    .catch(err => console.log('SW Registration Failed: ', err));
+            });
+        }
+    </script>
+</body>
+</html>
